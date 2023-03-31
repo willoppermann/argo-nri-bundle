@@ -1,0 +1,34 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: argo-cd
+  namespace: argocd
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  project: newrelic
+  source:
+    chart: argo-cd
+    repoURL: https://github.com/argoproj/argo-helm
+    targetRevision: HEAD
+    helm:
+      releaseName: argo-cd
+      values: |
+        dex:
+          enabled: false
+        server:
+          extraArgs:
+            - --insecure
+          config:
+            repositories: |
+              - type: helm
+                name: argo-cd
+                url: https://argoproj.github.io/argo-helm
+  destination:
+    server: "https://kubernetes.default.svc"
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+
